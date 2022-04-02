@@ -54,7 +54,12 @@ export default class DislikeDao {
     findAllTuitsDislikedByUser = async (uid: string): Promise<Dislike[]> =>
         DislikeModel
             .find({dislikedBy: uid})
-            .populate("tuit")
+            .populate({
+                path : "tuit",
+                populate : {
+                    path : "postedBy"
+                }
+            })
             .exec();
 
     /**
@@ -69,10 +74,22 @@ export default class DislikeDao {
             .populate("dislikedBy")
             .exec();
 
+    /**
+     * Uses DislikeModel to retrieve a dislike instance based on the disliked tuit and
+     * the user who disliked it from the dislikes collection
+     * @param {string} tid Primary key of the tuit
+     * @param {string} tid Primary key of the user
+     * @returns Promise To be notified when dislike instance is retrieved from the database
+     */
     findUserDislikesTuit = async (tid: string, uid: string): Promise<any> =>
-        DislikeModel.findOne({tuit: tid, dislikedBy: uid});
-            // .populate("dislikedBy").exec();
+        DislikeModel.findOne({tuit: tid, dislikedBy: uid}).populate("dislikedBy").exec();
 
+    /**
+     * Counts the number of dislike instances that contain the specified tuit
+     * and returns a number. In other words, it counts the number of dislikes a tuit received
+     * @param {string} tid Primary key of the tuit
+     * @returns number number of dislikes on the tuit
+     */
     countHowManyDislikedTuit = async (tid: string): Promise<any> =>
         DislikeModel.count({tuit: tid});
 };

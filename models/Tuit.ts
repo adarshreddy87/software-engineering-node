@@ -11,11 +11,11 @@ import User from "./User";
  * @property {Date} postedOn the date when the tuit was posted
  * @property {string} postedBy User(username) posting the tuit
  */
-export default class Tuit {
-    public tuit: String = '';
-    public postedOn: Date = new Date();
-    public postedBy: String | null = null;
-    public stats: TuitStats | any;
+export default interface Tuit {
+    tuit: string,
+    postedOn: Date,
+    postedBy: User,
+    stats: TuitStats
 }
 
 export interface TuitStats {

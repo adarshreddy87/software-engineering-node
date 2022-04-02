@@ -2,7 +2,6 @@
  * @file Controller RESTful Web service API for users resource
  */
 import UserDao from "../daos/UserDao";
-import User from "../models/User";
 import {Express, Request, Response} from "express";
 import UserControllerI from "../interfaces/UserControllerI";
 
@@ -41,6 +40,8 @@ export default class UserController implements UserControllerI {
             app.put("/api/users/:uid", UserController.userController.updateUser);
             app.delete("/api/users/:uid", UserController.userController.deleteUser);
             app.delete("/api/users", UserController.userController.deleteAllUsers);
+            app.post("/api/login", UserController.userController.login);
+            app.post("/api/register", UserController.userController.register);
         }
         return UserController.userController;
     }
@@ -55,7 +56,7 @@ export default class UserController implements UserControllerI {
      */
     findAllUsers = (req: Request, res: Response) =>
         UserController.userDao.findAllUsers()
-            .then((users: User[]) => res.json(users));
+            .then((users) => res.json(users));
 
     /**
      * Retrieves the user by their primary key
@@ -66,7 +67,7 @@ export default class UserController implements UserControllerI {
      */
     findUserById = (req: Request, res: Response) =>
         UserController.userDao.findUserById(req.params.uid)
-            .then((user: User) => res.json(user));
+            .then((user) => res.json(user));
 
     /**
      * Creates a new user instance
@@ -79,7 +80,7 @@ export default class UserController implements UserControllerI {
      */
     createUser = (req: Request, res: Response) =>
         UserController.userDao.createUser(req.body)
-            .then((user: User) => res.json(user));
+            .then((user) => res.json(user));
 
     /**
      * Modifies an existing user instance
@@ -113,4 +114,12 @@ export default class UserController implements UserControllerI {
     deleteAllUsers = (req: Request, res: Response) =>
         UserController.userDao.deleteAllUsers()
             .then((status) => res.send(status));
+
+    login = (req: Request, res: Response) =>
+        UserController.userDao.findUserByCredentials(req.body.username, req.body.password)
+            .then(user => res.json(user));
+
+    register = (req: Request, res: Response) =>
+        UserController.userDao.findUserByUsername(req.body.username)
+            .then(user=> res.json(user));
 };
