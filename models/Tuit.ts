@@ -12,7 +12,14 @@ import User from "./User";
  * @property {string} postedBy User(username) posting the tuit
  */
 export default class Tuit {
-    private tuit: string = '';
-    private postedOn: Date = new Date();
-    private postedBy: String | null = null;
+    public tuit: String = '';
+    public postedOn: Date = new Date();
+    public postedBy: String | null = null;
+    public stats: TuitStats | any;
+}
+
+export interface TuitStats {
+    replies: number;
+    retuits: number;
+    likes: number;
 }
