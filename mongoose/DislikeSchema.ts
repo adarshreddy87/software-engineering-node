@@ -7,5 +7,5 @@ import Dislike from "../models/Dislike";
 const DislikeSchema = new mongoose.Schema<Dislike>({
     tuit: {type: Schema.Types.ObjectId, ref: "TuitModel"},
     dislikedBy: {type: Schema.Types.ObjectId, ref: "UserModel"},
-}, {collection: "likes"});
+}, {collection: "dislikes"});
 export default DislikeSchema;
