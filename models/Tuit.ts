@@ -18,6 +18,15 @@ export default interface Tuit {
     stats: TuitStats
 }
 
+/**
+ * @typedef TuitStats represents a message relationship between two users,
+ * a user messages another user
+ * @property {number} replies the number of replies on a tuit
+ * @property {number} retuits the number of retuits on a tuit
+ * @property {number} likes the number of likes on a tuit
+ * @property {number} dislikes the number of dislikes on a tuit
+ */
+
 export interface TuitStats {
     replies: number;
     retuits: number;

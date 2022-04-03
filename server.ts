@@ -26,12 +26,13 @@ import AuthenticationController from "./controllers/AuthenticationController";
 import SessionController from "./controllers/SessionController";
 import 'dotenv/config'
 
+var cors = require('cors');
+const session = require("express-session");
+
 const connectionString = `mongodb+srv://adarsh:Adarsh=97@software-engg.8s8gk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 mongoose.connect(connectionString);
 
-const session = require("express-session");
 const app = express();
-var cors = require('cors');
 
 app.use(cors({
     credentials: true,
@@ -69,7 +70,7 @@ const followController = FollowController.getInstance(app);
 const messageController = MessageController.getInstance(app);
 const likesController = LikeController.getInstance(app);
 const dislikeController = DislikeController.getInstance(app);
-// SessionController(app);
+SessionController(app);
 AuthenticationController(app);
 /**
  * Start a server listening at port 4000 locally

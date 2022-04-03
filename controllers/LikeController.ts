@@ -15,12 +15,12 @@ import DislikeDao from "../daos/DislikeDao";
  *     </li>
  *     <li>GET /api/tuits/:tid/likes to retrieve all users that liked a tuit
  *     </li>
- *     <li>POST /api/users/:uid/likes/:tid to record that a user likes a tuit
+ *     <li>PUT /api/users/:uid/likes/:tid to update a like instance when like button is clicked
  *     </li>
- *     <li>DELETE /api/users/:uid/unlikes/:tid to record that a user
- *     no longer likes a tuit</li>
  * </ul>
  * @property {LikeDao} likeDao Singleton DAO implementing likes CRUD operations
+ * @property {TuitDao} likeDao Singleton DAO implementing tuit CRUD operations
+ * @property {DislikeDao} dislikeDao Singleton DAO implementing dislike CRUD operations
  * @property {LikeController} LikeController Singleton controller implementing
  * RESTful Web service API
  */
@@ -41,10 +41,10 @@ export default class LikeController implements LikeControllerI {
             LikeController.likeController = new LikeController();
             app.get("/api/users/:uid/likes", LikeController.likeController.findAllTuitsLikedByUser);
             app.get("/api/tuits/:tid/likes", LikeController.likeController.findAllUsersThatLikedTuit);
-            app.post("/api/users/:uid/likes/:tid", LikeController.likeController.userLikesTuit);
-            app.delete("/api/users/:uid/unlikes/:tid", LikeController.likeController.userUnlikesTuit);
+            // app.post("/api/users/:uid/likes/:tid", LikeController.likeController.userLikesTuit);
+            // app.delete("/api/users/:uid/unlikes/:tid", LikeController.likeController.userUnlikesTuit);
             app.put("/api/users/:uid/likes/:tid", LikeController.likeController.userTogglesTuitLikes);
-            app.get('/api/users/:uid/likes/:tid', LikeController.likeController.findUserLikesTuit);
+            // app.get('/api/users/:uid/likes/:tid', LikeController.likeController.findUserLikesTuit);
         }
         return LikeController.likeController;
     }
@@ -84,6 +84,7 @@ export default class LikeController implements LikeControllerI {
     }
 
     /**
+     * Creates a new like instance
      * @param {Request} req Represents request from client, including the
      * path parameters uid and tid representing the user that is liking the tuit
      * and the tuit being liked
@@ -96,6 +97,7 @@ export default class LikeController implements LikeControllerI {
             .then(likes => res.json(likes));
 
     /**
+     * Removes a like instance from the database
      * @param {Request} req Represents request from client, including the
      * path parameters uid and tid representing the user that is unliking
      * the tuit and the tuit being unliked
@@ -107,7 +109,8 @@ export default class LikeController implements LikeControllerI {
             .then(status => res.send(status));
 
     /**
-     * Adjusts the relationship between likes and dislikes for a particular tuit
+     * Performs update operations on the statistics related to likes on tuits in the database when
+     * like button is clicked
      * @param {Request} req The request from the client, including the path parameters uid and tid representing
      * the user who has liked or disliked a tuit and the related tuit
      * @param {Response} res The response to the client, including status on whether the toggle was successful
@@ -128,17 +131,17 @@ export default class LikeController implements LikeControllerI {
             const userAlreadyLikedTuit = await LikeController.likeDao
                 .findUserLikesTuit(userId, tid);
             const userHasDislikedTuit = await LikeController.dislikeDao
-                .findUserDislikesTuit(userId, tid);
+                .findUserDislikesTuit(tid, userId);
             const howManyLikedTuit = await LikeController.likeDao
                 .countHowManyLikedTuit(tid);
             const howManyDislikedTuit = await LikeController.dislikeDao
                 .countHowManyDislikedTuit(tid);
             let tuit = await LikeController.tuitDao.findTuitById(tid);
             if (userAlreadyLikedTuit) {
-                await LikeController.likeDao.userUnlikesTuit(tid, userId);
+                await LikeController.likeDao.userUnlikesTuit(userId, tid);
                 tuit.stats.likes = howManyLikedTuit - 1;
             } else {
-                await LikeController.likeDao.userLikesTuit(tid, userId);
+                await LikeController.likeDao.userLikesTuit(userId, tid);
                 tuit.stats.likes = howManyLikedTuit + 1;
                 if (userHasDislikedTuit) {
                     // decrement dislikes, unlike the tuit

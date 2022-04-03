@@ -11,11 +11,8 @@ import LikeDao from "../daos/LikeDao";
  * @class DislikeController Implements RESTful web service API for dislikes resource
  * Defines the following HTTP endpoints:
  * <ul>
- *     <li>PUT /api/users/:uid/dislikes/:tid to update the dislike/like information of a tuit </li>
- *     <li>POST /api/users/:uid/dislikes/:tid to record that a user disliked a tuit</li>
- *     <li>DELETE /api/users/:uid/undislikes/:tid to record that a user no longer dislikes a tuit</li>
+ *     <li>PUT /api/users/:uid/dislikes/:tid to update a dislike instance when dislike button is clicked</li>
  *     <li>GET /api/users/:uid/dislikes to retrieve all tuits disliked by a user</li>
- *     <li>GET /api/users/:uid/dislikes/:tid to retrieve a dislike instance of a specific user and tuit
  * </ul>
  * @property {DislikeDao} dislikeDao Singleton DAO implementing dislikes CRUD operations
  * @property {LikeDao} likeDao Singleton DAO implementing likes CRUD operations
@@ -36,16 +33,17 @@ export default class DislikeController {
         if (DislikeController.dislikeController === null) {
             DislikeController.dislikeController = new DislikeController();
             app.put("/api/users/:uid/dislikes/:tid", DislikeController.dislikeController.userTogglesDislikeTuit);
-            app.post("/api/users/:uid/dislikes/:tid", DislikeController.dislikeController.userDislikesTuit);
-            app.delete("/api/users/:uid/undislikes/:tid", DislikeController.dislikeController.userUndislikesTuit);
+            // app.post("/api/users/:uid/dislikes/:tid", DislikeController.dislikeController.userDislikesTuit);
+            // app.delete("/api/users/:uid/undislikes/:tid", DislikeController.dislikeController.userUndislikesTuit);
             app.get("/api/users/:uid/dislikes", DislikeController.dislikeController.findAllTuitsDislikedByUser);
-            app.get("/api/users/:uid/dislikes/:tid", DislikeController.dislikeController.findUserDislikesTuit);
+            // app.get("/api/users/:uid/dislikes/:tid", DislikeController.dislikeController.findUserDislikesTuit);
         }
         return DislikeController.dislikeController;
     }
 
     /**
-     * Adjusts the relationship between likes and dislikes for a particular tuit
+     * Performs update operations on the statistics related to dislikes on tuits in the database when
+     * dislike button is clicked
      * @param {Request} req The request from the client, including the path parameters uid and tid representing
      * the user who has liked or disliked a tuit and the related tuit
      * @param {Response} res The response to the client, including status on whether the toggle was successful
@@ -64,7 +62,7 @@ export default class DislikeController {
         }
         try {
             const userAlreadyDislikedTuit = await DislikeController.dislikeDao
-                .findUserDislikesTuit(userId, tid);
+                .findUserDislikesTuit(tid, userId);
             const userHasLikedTuit = await DislikeController.likeDao
                 .findUserLikesTuit(userId, tid);
             const howManyDislikedTuit = await DislikeController.dislikeDao
@@ -80,7 +78,7 @@ export default class DislikeController {
                 tuit.stats.dislikes = howManyDislikedTuit + 1;
                 if (userHasLikedTuit) {
                     // decrement likes, undislike the tuit
-                    await DislikeController.likeDao.userUnlikesTuit(tid, userId);
+                    await DislikeController.likeDao.userUnlikesTuit(userId, tid);
                     tuit.stats.likes = howManyLikedTuit - 1;
                 }
             }
@@ -145,7 +143,7 @@ export default class DislikeController {
         const profile = req.session['profile'];
         const userId = uid === "me" && profile ?
             profile._id : uid;
-        return DislikeController.dislikeDao.findUserDislikesTuit(userId, tid)
+        return DislikeController.dislikeDao.findUserDislikesTuit(tid, userId)
             .then(dislike => res.json(dislike));
     }
 };

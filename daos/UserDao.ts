@@ -31,7 +31,7 @@ export default class UserDao implements UserDaoI {
      * @returns Promise To be notified when the users are retrieved from database
      */
     findAllUsers = async (): Promise<User[]> =>
-        UserModel.find().exec();
+        UserModel.find();
 
     /**
      * Uses UserModel to retrieve single user document from users collection
