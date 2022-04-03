@@ -21,6 +21,9 @@ import BookmarkController from "./controllers/BookmarkController";
 import FollowController from "./controllers/FollowController";
 import MessageController from "./controllers/MessageController";
 import LikeController from "./controllers/LikeController";
+import DislikeController from "./controllers/DislikeController";
+import AuthenticationController from "./controllers/AuthenticationController";
+import 'dotenv/config'
 
 // connect to the database
 const DB_USERNAME = process.env.DB_USERNAME;
@@ -31,24 +34,30 @@ mongoose.connect(
     // "mongodb://localhost:27017/Tuiter"
 );
 
-// create RESTful Web service API
-const app = express();
-app.use(express.json());
-
 const session = require("express-session");
+const app = express();
 let sess = {
     secret: process.env.SECRET,
+    proxy: true,
     cookie: {
-        secure: false
+        secure: true,
+        sameSite: 'none'
     }
 }
 
-if (process.env.ENV === 'PRODUCTION') {
-    app.set('trust proxy', 1) // trust first proxy
-    sess.cookie.secure = true // serve secure cookies
+if (process.env.ENV === 'production') {
+    app.set('trust proxy', 1)
+    sess.cookie.secure = true;
 }
 
-app.use(session(sess))
+
+var cors = require('cors');
+app.use(session(sess));
+app.use(express.json());
+app.use(cors({
+    credentials: true,
+    origin: ['http://localhost:3000', 'https://adarshreddy-se-react.netlify.app']
+}));
 
 app.get('/', (req: Request, res: Response) =>
     res.send('Welcome!'));
@@ -63,7 +72,8 @@ const bookmarkController = BookmarkController.getInstance(app);
 const followController = FollowController.getInstance(app);
 const messageController = MessageController.getInstance(app);
 const likesController = LikeController.getInstance(app);
-
+const dislikeController = DislikeController.getInstance(app);
+AuthenticationController(app);
 /**
  * Start a server listening at port 4000 locally
  * but use environment variable PORT on Heroku if available.
