@@ -55,7 +55,7 @@ export default class TuitController implements TuitControllerI {
      */
     findAllTuits = (req: Request, res: Response) =>
         TuitController.tuitDao.findAllTuits()
-            .then((tuits: Tuit[]) => res.json(tuits));
+            .then((tuits) => res.json(tuits));
 
     /**
      * Retrieves all tuits from the database for a particular user and returns
@@ -64,9 +64,18 @@ export default class TuitController implements TuitControllerI {
      * @param {Response} res Represents response to client, including the
      * body formatted as JSON arrays containing the tuit objects
      */
-    findAllTuitsByUser = (req: Request, res: Response) =>
-        TuitController.tuitDao.findAllTuitsByUser(req.params.uid)
+    findAllTuitsByUser = (req: Request, res: Response) => {
+        // @ts-ignore
+        let userId = req.params.uid === "me" && req.session['profile'] ?
+            // @ts-ignore
+            req.session['profile']._id : req.params.uid;
+        if (userId === "me") {
+            res.sendStatus(503);
+            return;
+        }
+        TuitController.tuitDao.findAllTuitsByUser(userId)
             .then((tuits: Tuit[]) => res.json(tuits));
+    }
 
     /**
      * Retrieves a particular tuit by its primary key.
@@ -77,7 +86,7 @@ export default class TuitController implements TuitControllerI {
      */
     findTuitById = (req: Request, res: Response) =>
         TuitController.tuitDao.findTuitById(req.params.uid)
-            .then((tuit: Tuit) => res.json(tuit));
+            .then((tuit) => res.json(tuit));
 
     /**
      * Creates a tuit instance.
@@ -88,9 +97,20 @@ export default class TuitController implements TuitControllerI {
      * body formatted as JSON containing the new tuit that was inserted in the
      * database
      */
-    createTuitByUser = (req: Request, res: Response) =>
-        TuitController.tuitDao.createTuitByUser(req.params.uid, req.body)
+    createTuitByUser = (req: Request, res: Response) => {
+        // @ts-ignore
+        let userId = req.params.uid === "me" && req.session['profile'] ?
+            // @ts-ignore
+            req.session['profile']._id : req.params.uid;
+        console.log(userId);
+        if (userId === "me") {
+            res.sendStatus(503);
+            return;
+        }
+
+        TuitController.tuitDao.createTuitByUser(userId, req.body)
             .then((tuit: Tuit) => res.json(tuit));
+    }
 
     /**
      * Updates a tuit instance.

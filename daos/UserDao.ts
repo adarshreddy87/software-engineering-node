@@ -83,6 +83,7 @@ export default class UserDao implements UserDaoI {
      findUserByCredentials = async (username: string, password: string): Promise<any> => {
         return UserModel.findOne({username: username, password: password});
     }
+
     /**
      * Calls on UserModel to find a user of the given username
      * @param username {string} username
@@ -90,6 +91,12 @@ export default class UserDao implements UserDaoI {
     findUserByUsername = async (username: string): Promise<any> => {
         return UserModel.findOne({username: username});
     }
+
+    /**
+     * Deletes the user instance based on the specified user name
+     * @param {string} username user name of user to be deleted
+     * @returns Promise To be notified when user is deleted in the database
+     */
     deleteUsersByUsername = async (username: string): Promise<any> => {
         return UserModel.deleteMany({username});
     }
