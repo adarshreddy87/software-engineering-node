@@ -117,8 +117,16 @@ export default class DislikeController {
      * relevant tuit objects
      */
     findAllTuitsDislikedByUser = (req: Request, res: Response) => {
-        DislikeController.dislikeDao.findAllTuitsDislikedByUser(req.params.uid)
-            .then(dislikes => res.json(dislikes));
+        const uid = req.params.uid;
+        // @ts-ignore
+        const profile = req.session['profile'];
+        const userId = uid === "me" && profile ? profile._id : uid;
+        DislikeController.dislikeDao.findAllTuitsDislikedByUser(userId)
+            .then(dislikes => {
+                const dislikesNonNullTuits = dislikes.filter(dislike => dislike.tuit);
+                const tuitsFromDislikes = dislikesNonNullTuits.map(dislike => dislike.tuit);
+                res.json(tuitsFromDislikes);
+            })
     }
     /**
      * Retrieves a dislike instance that contains a particular user and a particular tuit
@@ -127,7 +135,13 @@ export default class DislikeController {
      * @param {Response} res The response to the client, including a JSON object containing the related dislike
      */
     findUserDislikesTuit = (req: Request, res: Response) => {
-        return DislikeController.dislikeDao.findUserDislikesTuit(req.params.tid, req.params.uid)
+        const uid = req.params.uid;
+        const tid = req.params.tid;
+        // @ts-ignore
+        const profile = req.session['profile'];
+        const userId = uid === "me" && profile ?
+            profile._id : uid;
+        return DislikeController.dislikeDao.findUserDislikesTuit(userId, tid)
             .then(dislike => res.json(dislike));
     }
 };
